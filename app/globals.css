@@ -24,3 +24,174 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* GameBoard scroll isolation */
+.game-board-container {
+  overscroll-behavior: contain;
+  overflow: hidden;
+  touch-action: none;
+}
+
+/* Prevent page scroll when interacting with game board */
+.game-board-container:hover {
+  overscroll-behavior: none;
+}
+
+/* Ensure SVG elements don't propagate wheel events */
+svg {
+  touch-action: none;
+}
+
+/* GameBoard scroll isolation */
+.game-board-container {
+  overscroll-behavior: contain;
+  overflow: hidden;
+  touch-action: none;
+}
+
+/* Prevent page scroll when interacting with game board */
+.game-board-container:hover {
+  overscroll-behavior: none;
+}
+
+/* Ensure SVG elements don't propagate wheel events */
+svg {
+  touch-action: none;
+}
+
+/* Ocean Background Animations */
+@keyframes oceanWaves {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes waveMove {
+  0% {
+    transform: translateX(-100%) translateY(0px);
+  }
+  100% {
+    transform: translateX(100vw) translateY(-10px);
+  }
+}
+
+@keyframes bubbleFloat {
+  0% {
+    transform: translateY(100vh) scale(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100px) scale(1);
+    opacity: 0;
+  }
+}
+
+.wave {
+  position: absolute;
+  height: 120px;
+  width: 200%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  border-radius: 50%;
+  animation: waveMove linear infinite;
+}
+
+.wave1 {
+  top: 20%;
+  animation-duration: 15s;
+  animation-delay: 0s;
+}
+
+.wave2 {
+  top: 40%;
+  animation-duration: 20s;
+  animation-delay: -5s;
+  height: 80px;
+}
+
+.wave3 {
+  top: 60%;
+  animation-duration: 25s;
+  animation-delay: -10s;
+  height: 100px;
+}
+
+.bubble {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.2));
+  animation: bubbleFloat linear infinite;
+}
+
+.bubble1 {
+  width: 8px;
+  height: 8px;
+  left: 10%;
+  animation-duration: 12s;
+  animation-delay: 0s;
+}
+
+.bubble2 {
+  width: 12px;
+  height: 12px;
+  left: 30%;
+  animation-duration: 15s;
+  animation-delay: -3s;
+}
+
+.bubble3 {
+  width: 6px;
+  height: 6px;
+  left: 50%;
+  animation-duration: 18s;
+  animation-delay: -6s;
+}
+
+.bubble4 {
+  width: 10px;
+  height: 10px;
+  left: 70%;
+  animation-duration: 14s;
+  animation-delay: -9s;
+}
+
+.bubble5 {
+  width: 15px;
+  height: 15px;
+  left: 90%;
+  animation-duration: 20s;
+  animation-delay: -12s;
+}
+
+/* Ocean shimmer effect */
+.ocean-background::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+  animation: shimmer 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}

@@ -3,22 +3,31 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "node dev-server.js",
+    "dev:separate": "start npm run dev:server && next dev",
+    "dev:server": "set PORT=3001 && node server.js",
     "build": "next build",
-    "start": "next start",
+    "start": "node production-server.js",
+    "start:socket-only": "set NODE_ENV=production && set PORT=3001 && node server.js",
     "lint": "next lint"
   },
   "dependencies": {
+    "@types/uuid": "^10.0.0",
+    "lucide-react": "^0.511.0",
+    "next": "15.3.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "next": "15.3.2"
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "uuid": "^11.1.0",
+    "zustand": "^5.0.5"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4"
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }

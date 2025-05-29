@@ -1,103 +1,169 @@
-import Image from "next/image";
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { useGameStore } from './store/gameStore';
+import { useMultiplayerGameStore } from './store/multiplayerGameStore';
+import { GameBoard } from './components/GameBoard';
+import { PlayerPanel } from './components/PlayerPanel';
+import { GameControls } from './components/GameControls';
+import { GameSetup } from './components/GameSetup';
+import { MainMenu } from './components/MainMenu';
+import { MultiplayerLobby } from './components/MultiplayerLobby';
+import { MultiplayerGame } from './components/MultiplayerGame';
+import { VictoryScreen } from './components/VictoryScreen';
+import { RobberPlacement } from './components/RobberPlacement';
+import { TradeInterface } from './components/TradeInterface';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [gameMode, setGameMode] = useState<'menu' | 'local' | 'online'>('menu');
+  const [isRejoining, setIsRejoining] = useState(false);
+  
+  // Local game store
+  const { 
+    players: localPlayers, 
+    winner: localWinner, 
+    phase: localPhase, 
+    initializeGame: initializeLocalGame 
+  } = useGameStore();
+  // Multiplayer game store
+  const { 
+    isGameStarted: multiplayerGameStarted,
+    currentRoom,
+    joinRoom,
+    connect,
+    disconnect
+  } = useMultiplayerGameStore();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleSelectMode = (mode: 'local' | 'online') => {
+    setGameMode(mode);
+  };
+
+  const handleRejoinGame = async (sessionData: { roomId: string; playerName: string; playerId: string }) => {
+    setIsRejoining(true);
+    setGameMode('online');
+    
+    try {
+      // Connect to the server
+      await connect();
+      
+      // Attempt to rejoin the room
+      const result = await joinRoom(sessionData.roomId, sessionData.playerName);
+      
+      if (!result.success) {
+        // If rejoin failed, clear the session and go back to menu
+        localStorage.removeItem('activeGameSession');
+        setGameMode('menu');
+        alert('Could not rejoin game: ' + (result.error || 'Game may no longer be active'));
+      }
+    } catch (error) {
+      console.error('Error rejoining game:', error);
+      localStorage.removeItem('activeGameSession');
+      setGameMode('menu');
+      alert('Could not rejoin game. The game may no longer be active.');
+    } finally {
+      setIsRejoining(false);
+    }
+  };  const handleBackToMenu = () => {
+    // Clear active session when returning to menu
+    localStorage.removeItem('activeGameSession');
+    
+    // Disconnect from multiplayer to clear room state
+    if (gameMode === 'online') {
+      disconnect();
+    }
+    
+    setGameMode('menu');
+    // Reset local game only if we were actually in a local game
+    if (gameMode === 'local' && localPlayers.length > 0) {
+      initializeLocalGame([]);
+    }
+  };
+  // Main menu
+  if (gameMode === 'menu') {
+    return (
+      <MainMenu 
+        onSelectMode={handleSelectMode} 
+        onRejoinGame={handleRejoinGame}
+      />
+    );
+  }  // Online multiplayer
+  if (gameMode === 'online') {
+    if (isRejoining) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center">
+          <div className="bg-gray-800 rounded-xl p-8 text-center">
+            <div className="animate-spin text-4xl mb-4">🔄</div>
+            <h2 className="text-white text-xl font-semibold mb-2">Rejoining Game...</h2>
+            <p className="text-gray-300">Attempting to reconnect to your game session</p>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+      );
+    }
+    
+    if (!multiplayerGameStarted) {
+      return <MultiplayerLobby />;
+    }
+    
+    // Render multiplayer game interface
+    return <MultiplayerGame onBackToMenu={handleBackToMenu} />;
+  }
+
+  // Local multiplayer
+  if (gameMode === 'local') {
+    // Show setup screen if no players
+    if (localPlayers.length === 0) {
+      return (
+        <div>
+          <div className="absolute top-4 left-4 z-10">
+            <button
+              onClick={handleBackToMenu}
+              className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold transition-colors"
+            >
+              ← Back to Menu
+            </button>
+          </div>
+          <GameSetup />
+        </div>
+      );
+    }
+
+    const winnerPlayer = localWinner ? localPlayers.find(p => p.id === localWinner) : null;
+
+    const handleNewGame = () => {
+      initializeLocalGame();
+    };    return (
+      <div className="fixed inset-0 bg-gradient-to-br from-blue-100 to-green-100">
+        {/* Fullscreen Game Board */}
+        <GameBoard />
+          {/* Floating UI Panels */}
+        <PlayerPanel />
+        <GameControls />
+        
+        {/* Trade Interface Overlay */}
+        {localPhase === 'main-turn' && <TradeInterface />}
+
+        {/* Menu Button */}
+        <button
+          onClick={handleBackToMenu}
+          className="fixed top-4 left-4 z-50 px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-lg font-semibold transition-colors shadow-lg border border-gray-600"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+          ← Menu
+        </button>
+
+        {/* Overlays */}
+        {localPhase === 'move-robber' && <RobberPlacement />}
+        
+        {winnerPlayer && (
+          <VictoryScreen
+            winnerId={winnerPlayer.id}
+            winnerName={winnerPlayer.name}
+            winnerColor={winnerPlayer.color}
+            onNewGame={handleNewGame}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+        )}
+      </div>
+    );
+  }
+
+  return null;
 }
