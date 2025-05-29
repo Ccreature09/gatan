@@ -27,8 +27,7 @@ class SocketService {
   private currentRoom: MultiplayerRoom | null = null;
   private currentPlayerId: string | null = null;
   private eventListeners: Map<string, Function[]> = new Map();
-  private isConnecting: boolean = false;
-  connect(): Promise<void> {
+  private isConnecting: boolean = false;  connect(): Promise<void> {
     return new Promise((resolve, reject) => {
       console.log('SocketService.connect() called');
       console.log('Current state:', {
@@ -59,24 +58,37 @@ class SocketService {
         checkConnection();
         return;
       }      this.isConnecting = true;
-      console.log('Setting isConnecting to true');
-
-      // Cleanup any existing socket first
+      console.log('Setting isConnecting to true');      // Cleanup any existing socket first
       if (this.socket) {
         console.log('Cleaning up existing socket');
         this.socket.removeAllListeners();
         this.socket.disconnect();
         this.socket = null;
-      }
-
-      // Connect to Socket.IO server (same port as Next.js in both dev and production)
-      const socketUrl = window.location.origin;
+      }      // Connect to Socket.IO server
+      // For Vercel deployments, we need to handle websockets differently
+      let socketUrl = window.location.origin;
+      let socketPath = undefined;
       
-      console.log('Attempting to connect to:', socketUrl);
+      // In production on Vercel, use their serverless functions through API routes
+      if (process.env.NODE_ENV === 'production') {
+        // On Vercel, we can use Socket.IO through a serverless function
+        // or fall back to a separate WebSocket server if needed
+        if (process.env.NEXT_PUBLIC_USE_EXTERNAL_SOCKET === 'true' && 
+            process.env.NEXT_PUBLIC_SOCKET_SERVER_URL) {
+          // Use external socket server if configured
+          socketUrl = process.env.NEXT_PUBLIC_SOCKET_SERVER_URL;
+        } else {
+          // Otherwise try to use Vercel's serverless functions
+          socketPath = '/api/socketio';
+        }
+      }
+      
+      console.log('Attempting to connect to:', socketUrl, 'with path:', socketPath || 'default');
       this.socket = io(socketUrl, {
         forceNew: true, // Force a new connection
         timeout: 10000, // 10 second timeout
-        transports: ['websocket', 'polling']
+        transports: ['polling', 'websocket'], // Try polling first on Vercel
+        path: socketPath
       });
 
       this.socket.on('connect', () => {

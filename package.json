@@ -8,7 +8,8 @@
     "dev:server": "set PORT=3001 && node server.js",
     "build": "next build",
     "start": "node production-server.js",
-    "start:socket-only": "set NODE_ENV=production && set PORT=3001 && node server.js",
+    "start:socket-only": "set NODE_ENV=production && node socket-server.js",
+    "start:socket-only:linux": "NODE_ENV=production node socket-server.js",
     "lint": "next lint"
   },
   "dependencies": {
