@@ -10,6 +10,8 @@
     "start": "node production-server.js",
     "start:socket-only": "set NODE_ENV=production && node socket-server.js",
     "start:socket-only:linux": "NODE_ENV=production node socket-server.js",
+    "test:socket": "node test-socket.js",
+    "test:socket:local": "node test-socket.js http://localhost:3001",
     "lint": "next lint"
   },
   "dependencies": {

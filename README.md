@@ -37,36 +37,30 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## WebSocket Configuration for Vercel
 
-This project uses WebSockets for real-time game communication. For deployment on Vercel, there are two options:
+⚠️ **Important**: Vercel's serverless functions don't support persistent WebSocket connections. For multiplayer functionality in production, you need to deploy the Socket.IO server separately.
 
-### Option 1: Using Vercel's Serverless Functions (Default)
+### Quick Solution: Deploy to Render (Recommended)
 
-This project is configured to use Socket.IO through Vercel's serverless functions by default. The implementation is in `pages/api/socketio.js`.
+1. **Deploy Socket Server**:
+   - Go to [render.com](https://render.com)
+   - Create Web Service from GitHub with start command: `npm run start:socket-only:linux`
+   - Set environment variables: `NODE_ENV=production`, `ALLOWED_ORIGINS=https://your-vercel-app.vercel.app`
 
-Benefits:
-- No additional server needed
-- Works well for games with fewer concurrent users
-- Simpler deployment - just deploy to Vercel
+2. **Update Vercel Environment Variables**:
+   ```
+   NEXT_PUBLIC_USE_EXTERNAL_SOCKET=true
+   NEXT_PUBLIC_SOCKET_SERVER_URL=https://your-render-url.onrender.com
+   ```
 
-Limitations:
-- Limited by serverless function execution time (may reconnect during long games)
-- Connection quality depends on Vercel's serverless function performance
+3. **Test**: Run `npm run test:socket https://your-render-url.onrender.com`
 
-### Option 2: Using a Separate WebSocket Server
+📖 **Detailed Instructions**: See `DEPLOY_RENDER.md` for step-by-step deployment guide.
 
-For games with many concurrent users or longer session times, you can deploy a separate WebSocket server.
+### Alternative Platforms
+- **Railway.app**: Similar setup, also has free tier
+- **Heroku**: Requires paid plan (no free tier)
+- **Fly.io**: Good for real-time applications
 
-1. Set `NEXT_PUBLIC_USE_EXTERNAL_SOCKET=true` in your Vercel environment variables
-2. Set `NEXT_PUBLIC_SOCKET_SERVER_URL` to your WebSocket server URL
-3. Deploy the WebSocket server using one of these options:
-
-**Deploying a Dedicated Socket Server:**
-
-1. **Using a VPS or Cloud Provider**
-   - Set up a server on DigitalOcean, AWS, etc.
-   - Run `npm run start:socket-only` to start the WebSocket server
-   - Use a process manager like PM2: `pm2 start npm --name "gatan-socket-server" -- run start:socket-only`
-
-2. **Using Platforms that Support WebSockets**
-   - Heroku: Deploy using the included Procfile (requires Eco or Basic plan)
-   - Railway, Render, or Fly.io: Deploy the repository and set the start command to `npm run start:socket-only:linux`
+### Local Development
+- Use `npm run dev` (includes integrated Socket.IO server)
+- Test socket server: `npm run test:socket:local`

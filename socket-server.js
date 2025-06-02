@@ -13,7 +13,9 @@ const httpServer = createServer((req, res) => {
     res.end(JSON.stringify({ 
       status: 'ok', 
       timestamp: new Date().toISOString(),
-      service: 'gatan-socket-server'
+      service: 'gatan-socket-server',
+      connections: connectionCount,
+      totalConnections
     }));
     return;
   }
@@ -44,6 +46,10 @@ const io = new Server(httpServer, {
   pingTimeout: 60000, // Increase ping timeout for better stability
 });
 
+// Connection tracking
+let connectionCount = 0;
+let totalConnections = 0;
+
 // Extract game logic from production-server.js
 // This contains all the room and game state management
 
@@ -53,6 +59,8 @@ const rooms = new Map();
 // Room management
 io.on('connection', (socket) => {
   console.log(`Client connected: ${socket.id}`);
+  connectionCount++;
+  totalConnections++;
 
   // Create room
   socket.on('createRoom', (playerName, playerColor, callback) => {
@@ -202,6 +210,7 @@ io.on('connection', (socket) => {
   // Disconnect handler
   socket.on('disconnect', () => {
     console.log(`Client disconnected: ${socket.id}`);
+    connectionCount--;
     
     // Find rooms where this socket is a player
     rooms.forEach((room, roomId) => {

@@ -1,7 +1,7 @@
 {
   "version": 2,
   "env": {
-    "NEXT_PUBLIC_USE_EXTERNAL_SOCKET": "false"
+    "NEXT_PUBLIC_USE_EXTERNAL_SOCKET": "true"
   },
   "builds": [
     {
@@ -9,6 +9,11 @@
       "use": "@vercel/next"
     }
   ],
+  "functions": {
+    "pages/api/socketio.js": {
+      "maxDuration": 30
+    }
+  },
   "headers": [
     {
       "source": "/api/socketio",

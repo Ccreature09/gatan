@@ -65,22 +65,19 @@ class SocketService {
         this.socket.disconnect();
         this.socket = null;
       }      // Connect to Socket.IO server
-      // For Vercel deployments, we need to handle websockets differently
       let socketUrl = window.location.origin;
       let socketPath = undefined;
       
-      // In production on Vercel, use their serverless functions through API routes
-      if (process.env.NODE_ENV === 'production') {
-        // On Vercel, we can use Socket.IO through a serverless function
-        // or fall back to a separate WebSocket server if needed
-        if (process.env.NEXT_PUBLIC_USE_EXTERNAL_SOCKET === 'true' && 
-            process.env.NEXT_PUBLIC_SOCKET_SERVER_URL) {
-          // Use external socket server if configured
-          socketUrl = process.env.NEXT_PUBLIC_SOCKET_SERVER_URL;
-        } else {
-          // Otherwise try to use Vercel's serverless functions
-          socketPath = '/api/socketio';
-        }
+      // Check if we should use an external socket server
+      if (process.env.NEXT_PUBLIC_USE_EXTERNAL_SOCKET === 'true' && 
+          process.env.NEXT_PUBLIC_SOCKET_SERVER_URL) {
+        console.log('Using external socket server:', process.env.NEXT_PUBLIC_SOCKET_SERVER_URL);
+        socketUrl = process.env.NEXT_PUBLIC_SOCKET_SERVER_URL;
+        socketPath = undefined; // External servers don't need a custom path
+      } else {
+        // Use Vercel's serverless functions (may have connection issues)
+        console.log('Using Vercel serverless functions for Socket.IO');
+        socketPath = '/api/socketio';
       }
       
       console.log('Attempting to connect to:', socketUrl, 'with path:', socketPath || 'default');
@@ -95,11 +92,21 @@ class SocketService {
         console.log('Connected to server');
         this.isConnecting = false;
         resolve();
-      });
-
-      this.socket.on('connect_error', (error) => {
+      });      this.socket.on('connect_error', (error) => {
         console.error('Connection error:', error);
+        console.error('Error details:', {
+          message: error.message,
+          type: (error as any).type || 'unknown'
+        });
         this.isConnecting = false;
+        
+        // Provide helpful error messages for common issues
+        if (error.message && error.message.includes('xhr poll error')) {
+          console.error('❌ Vercel serverless function WebSocket limitation detected!');
+          console.error('💡 Solution: Deploy Socket.IO server to Railway, Render, or another platform');
+          console.error('📖 See DEPLOY_RAILWAY.md for step-by-step instructions');
+        }
+        
         reject(error);
       });
 
