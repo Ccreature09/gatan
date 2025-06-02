@@ -17,8 +17,10 @@
    - **Region**: Choose closest to your users
    - **Branch**: `main` (or your default branch)
    - **Root Directory**: Leave empty (uses repo root)
-   - **Build Command**: `npm install`
-   - **Start Command**: `npm run start:socket-only:linux`
+   - **Build Command**: `npm install --only=production`
+   - **Start Command**: `node socket-server.js`
+   
+   ⚠️ **Alternative if above fails**: Use `cp socket-package.json package.json && npm install` as build command
 
 4. **Environment Variables**:
    Click "Advanced" and add these environment variables:

@@ -1,0 +1,16 @@
+{
+  "name": "gatan-socket-server",
+  "version": "1.0.0",
+  "description": "Socket.IO server for Gatan multiplayer game",
+  "main": "socket-server.js",
+  "scripts": {
+    "start": "NODE_ENV=production node socket-server.js"
+  },
+  "dependencies": {
+    "socket.io": "^4.8.1",
+    "uuid": "^11.1.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
