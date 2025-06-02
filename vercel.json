@@ -1,6 +1,7 @@
 {
   "version": 2,
   "env": {
-    "NEXT_PUBLIC_USE_EXTERNAL_SOCKET": "true"
+    "NEXT_PUBLIC_USE_EXTERNAL_SOCKET": "true",
+    "NEXT_PUBLIC_SOCKET_SERVER_URL": "https://gatan.onrender.com"
   }
 }
